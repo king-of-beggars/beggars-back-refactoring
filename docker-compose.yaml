@@ -1,0 +1,79 @@
+# docker-compose.yaml
+version: "3.1"
+
+services:
+
+  # mariadb:
+  #   container_name: mysql
+  #   image: mariadb:10
+  #   restart: always
+  #   env_file: ./.env
+  #   expose:
+  #     - "3306"
+  #   ports:
+  #     - $DB_PORT:$DB_PORT
+  #   volumes:
+  #     - ./init:/docker-entrypoint-initdb.d
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+  #     - MYSQL_DATABASE=$DB_DATABASE
+  #     - "TZ=Asia/Seoul"
+  #   command:
+  #     - --character-set-server=utf8mb4
+  #     - --collation-server=utf8mb4_unicode_ci
+
+  # front:
+  #   depends_on:
+  #     - backend
+  #   build: ./chat_react
+  #   # dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   env_file: ./.env
+  #   ports:
+  #     - $REACT_APP_LOCAL_PORT:$REACT_APP_DOCKER_PORT
+  #   volumes:
+  #     - ./chat_react:/app
+
+  backend:
+    depends_on:
+      - redis
+    build: ../finalPj
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - 3000:3000
+    environment:
+      - DB_HOST=$DB_HOST
+      - DB_USERNAME=$DB_USERNAME
+      - DB_PASSWORD=$DB_PASSWORD
+      # - DB_PORT=$DB_PORT
+      - SECRET_KEY=$SECRET_KEY
+      - ACCESS_TIME=$ACCESS_TIME
+      - REFRESH_TIME=$REFRESH_TIME
+      - KAKAO_ID=$KAKAO_ID
+      - AWS_BUCKET_REGION=$AWS_BUCKET_REGION
+      - AWS_BUCKET_NAME=$AWS_BUCKET_NAME
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - UPLOAD_FOLDER=$UPLOAD_FOLDER
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    stdin_open: true
+    tty: true
+    # volumes:
+    #   - ./chat_nest:/app
+
+  redis:
+    image: redis:alpine
+    command: redis-server --port 6379
+    container_name: redis
+    env_file: ./.env
+    restart: unless-stopped
+    # expose:
+    #   - $REACT_APP_REDIS_LOCAL_PORT
+    labels:
+      - "name=redis"
+      - "mode=standalone"
+    ports:
+      - $REDIS_PORT:$REDIS_PORT
+
+volumes:
+  db:
