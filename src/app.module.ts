@@ -19,6 +19,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HotdealModule } from './Hotdeal/hotdeal.module';
 import { Hotdeal } from './Hotdeal/hotdeal.entity';
 import { HotdealWiner } from './Hotdeal/hotdealWinner.entity';
+import { RedisModule } from '@nestjs-modules/ioredis';
 @Module({
   imports: [
     // ClusterModule.forRootAsync({
@@ -75,6 +76,14 @@ import { HotdealWiner } from './Hotdeal/hotdealWinner.entity';
             } 
           })
         })
+    }),
+    RedisModule.forRootAsync({
+      useFactory : () => ({
+        config: {
+          url : 'redis',
+          port : 6379
+        }
+      })
     })
   ],
   

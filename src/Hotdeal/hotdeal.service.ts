@@ -1,76 +1,65 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Hotdeal } from './hotdeal.entity';
 import { HotdealByIdDto } from './dto/hotdealById.dto';
 import { HotdealApplyDto } from './dto/hotdealApply.dto';
 import { QueryRunner } from 'typeorm';
-import { CreateFail, DeleteFail, ReadFail } from 'src/Utils/exception.service';
+import { CreateFail, DeleteFail, ReadFail, UpdateFail } from 'src/Utils/exception.service';
 import { HotdealAddDto } from './dto/hotdealAdd.dto';
+import { HotdealRepository } from './hotdeal.repository';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {Inject} from '@nestjs/common';
+import { LockService } from 'src/Utils/lock.service';
+
 @Injectable()
 export class HotdealService {
     constructor(  
-        @InjectRepository(Hotdeal)
-        private readonly hotdeal : Repository<Hotdeal>
+        private readonly hotdealRepository : HotdealRepository,
+        private readonly dataSource : DataSource,
+        private readonly lockService : LockService
     ){}
     
     //핫딜 리스트
     async getHotdealList () {
-        try {
-            return await this.hotdeal.createQueryBuilder('hotdeal')
-            .select()
-            .getMany()
-        } catch(e) {
-            throw new ReadFail(e.stack)
-        }
+        return await this.hotdealRepository.readHotdeal()
     }
 
     //핫딜 winner 추가
     async registWinner (
-        hotdealApplyDto : HotdealApplyDto,
-        queryRunner : QueryRunner
+        hotdealApplyDto : HotdealApplyDto
     ) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
         try {
-            const query = this.hotdeal.create(
-                hotdealApplyDto
-            )   
-            return await queryRunner.manager.save(query)
-
+            await this.hotdealRepository.readByHotdealId(hotdealApplyDto.hotdealId, queryRunner)
+            await this.hotdealService.minusInventory(hotdealByIdDto,queryRunner)
+            await this.hotdealService.registWinner(hotdealApplyDto,queryRunner)
         } catch(e) {
-
+            await queryRunner.rollbackTransaction()
+            throw new CreateFail(e.stack)
+        } finally {
+            await queryRunner.commitTransaction()
         }
     }   
 
     //핫딜 재고 minus
-    async minusInventory (
-        hotdealByIdDto : HotdealByIdDto, 
-        queryRunner : QueryRunner
+    async updateInventory (
+        hotdealId : number,
+        updateNumber : number
     ) {
         try {
-            return await queryRunner.manager
-            .createQueryBuilder()
-            .update('Hotdeal')
-            .set({ 
-                userPoint: () =>
-                  `hotdealLimit - 1`,
-            })
-            .where('hotdealId = :hotdealId', { hotdealId: hotdealByIdDto.hotdealId })
-            .execute();
+            return this.hotdealRepository.updateInventory(hotdealId,updateNumber)
 
         } catch(e) {
-
+            throw new UpdateFail(e.stack)
         }
     }
 
     //핫딜 제거
-    async hotdealDelete (hotdealByIdDto : HotdealByIdDto) {
-        try {
-            this.hotdeal.createQueryBuilder('hotdeal')
-            .delete()
-            .where('hotdealId=:hotdealId',{hotdealId : hotdealByIdDto.hotdealId})
-        } catch(e) {
-            throw new DeleteFail(e.stack)
-        }
+    async hotdealDelete (hotdealId : number) {
+        return await this.hotdealRepository.deleteHotdeal(hotdealId)
     }
 
     //핫딜 등록

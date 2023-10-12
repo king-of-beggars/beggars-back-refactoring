@@ -27,13 +27,14 @@ import { HttpException } from '@nestjs/common/exceptions';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { HotdealAddDto } from "./dto/hotdealAdd.dto";
 import { ApiConsumes } from "@nestjs/swagger";
+import { LockService } from "src/Utils/lock.service";
 
 @ApiTags('핫딜 API')
 @Controller('api/hotdeal')
 export class HotdealController {
     constructor(
         private hotdealService : HotdealService,
-        private dataSource: DataSource
+        private readonly lockService : LockService
     ){} 
 
     @Post(':hotDealId')
@@ -43,25 +44,22 @@ export class HotdealController {
         summary : '핫딜 등록'
     })
     async hotdealApply(hotdealApplyDto : HotdealApplyDto) {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        await queryRunner.startTransaction()
+        const lockKey = `hotdeal_lock_${hotdealApplyDto.hotdealId}`
         try {
-            let hotdealByIdDto = new HotdealByIdDto()
-            hotdealByIdDto = {
-                hotdealId : hotdealApplyDto.hotdealId
+            const lock = await this.lockService.setLock(lockKey,30)
+            if(lock) {
+                await this.hotdealService.updateInventory(hotdealApplyDto.hotdealId,-1)
             }
-            await this.hotdealService.readInventory(hotdealByIdDto, queryRunner)
-            await this.hotdealService.minusInventory(hotdealByIdDto,queryRunner)
-            await this.hotdealService.registWinner(hotdealApplyDto,queryRunner)
             return `신청이 완료됐습니다`
         } catch(e) {
-            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
 
+        } finally {
+
+        }
     }
+
     
-    @Post()
+    @Post('/')
     @UseGuards(AccessAuthenticationGuard)
     @ApiOperation({
         summary : '핫딜 추가(관리자)'
@@ -111,12 +109,12 @@ export class HotdealController {
     @ApiOperation({
         summary : '핫딜 삭제'
     })
-    async hotdealDelete(@Req() req : any, hotdealByIdDto : HotdealByIdDto ) {
+    async hotdealDelete(@Req() req : any, hotdealId : number ) {
             const { user } = req
             if(user.userAuth!==1) {
                 throw new HttpException('관리자가 아닌 유저가 접근했습니다', HttpStatus.BAD_REQUEST)
             }
-            await this.hotdealService.hotdealDelete(hotdealByIdDto)
+            await this.hotdealService.hotdealDelete(hotdealId)
             return '삭제완료'
     }
 
