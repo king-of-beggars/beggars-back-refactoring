@@ -7,10 +7,18 @@ export class LockService {
         private readonly redisClient: Redis,
   ) {}
 
-  async setLock(key : string, time : number) : Promise<Boolean> {
+  async setLock(key : string, time : number, maxRetries : number) : Promise<Boolean> {
     try {
-        const result = await this.redisClient.set(key, 'locked', 'EX', time, 'NX')
-        return result==='OK';
+        let retry = 0
+        while(retry < maxRetries) {
+          const result = await this.redisClient.set(key, 'locked', 'EX', time, 'NX')
+          if(result) {
+            return result==='OK';
+          }
+          retry++
+          await new Promise(e=> setTimeout(e,500))
+        }
+        return false;
     } catch(e) {
         return false;
     }
