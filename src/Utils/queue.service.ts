@@ -24,7 +24,9 @@ export class QueueService {
     });
   }
 
-  async consumeMessage(callback: (message: amqp.ConsumeMessage | null) => void): Promise<void> {
+  async consumeMessage(callback: (message: amqp.ConsumeMessage | null) => {
+      
+  }): Promise<void> {
     // 메시지 소비
     this.channel.consume(this.queueName, callback, { noAck: false });
   }
