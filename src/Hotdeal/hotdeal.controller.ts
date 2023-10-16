@@ -28,15 +28,13 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { HotdealAddDto } from "./dto/hotdealAdd.dto";
 import { ApiConsumes } from "@nestjs/swagger";
 import { LockService } from "src/Utils/lock.service";
-import { QueueService } from "src/Utils/queue.service";
 
 @ApiTags('핫딜 API')
 @Controller('api/hotdeal')
 export class HotdealController {
     constructor(
         private hotdealService : HotdealService,
-        private readonly lockService : LockService,
-        private readonly queService : QueueService
+        private readonly lockService : LockService
     ){} 
 
     @Post(':hotDealId')
@@ -47,22 +45,17 @@ export class HotdealController {
     })
     async hotdealApply(hotdealApplyDto : HotdealApplyDto) {
         const lockKey = `hotdeal_lock_${hotdealApplyDto.hotdealId}`
-            const inventory = await this.hotdealService.readInventory(hotdealApplyDto.hotdealId)
-
-            if(!inventory) {
-                throw new HttpException('재고 소진', HttpStatus.BAD_REQUEST)
-            }
-
-            const lock = await this.lockService.setLock(lockKey,20,10)
+        try {
+            const lock = await this.lockService.setLock(lockKey,30)
             if(lock) {
-                const inven = this.hotdealService.updateInventory(hotdealApplyDto.hotdealId,-1)
-                const regist = this.hotdealService.registWinner(hotdealApplyDto)
-                await Promise.all([inven,regist])
-                return `신청이 완료됐습니다`
-            } else {
-                return '신청에 실패했습니다'
+                await this.hotdealService.updateInventory(hotdealApplyDto.hotdealId,-1)
             }
-       
+            return `신청이 완료됐습니다`
+        } catch(e) {
+
+        } finally {
+
+        }
     }
 
     
@@ -97,7 +90,7 @@ export class HotdealController {
             const { location } = file;
             hotdealAddDto.hotdealImg = location
             await this.hotdealService.addHotdeal(hotdealAddDto)
-            return '핫딜 등록이 완료됐습니다'
+            return res.status(201).send('완료')
         } catch(e) {
             throw new HttpException(e.message,HttpStatus.INTERNAL_SERVER_ERROR)
         }

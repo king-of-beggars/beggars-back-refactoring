@@ -125,7 +125,8 @@ export class UserController {
   async userLogin(@Req() req: any, @Res() res: Response) {
     const { user } = req;
 
-    let tokenDto : TokenDto= {
+    let tokenDto = new TokenDto();
+    tokenDto = {
       userId : user.userId,
       userName : user.userName,
       userNickname : user.userNickname
@@ -172,12 +173,23 @@ export class UserController {
       throw new Error('잘못된 접근입니다');
     }
     if (!user.userId) { 
+      res.cookie('userName', user, {
+        sameSite: 'none', 
+        secure: true,
+        httpOnly: false,
+      });
+
       return res.redirect(`https://beggars-front-eight.vercel.app?loginSuccess=false`);
     }
  
     const refreshToken = await this.authService.setRefreshToken(user);
     const accessToken = await this.authService.setAccessToken(user);
     await this.authService.setCookie(res, accessToken, refreshToken);
+    res.cookie('userId', user.userId, {
+      sameSite: 'none', 
+      secure: true,
+      httpOnly: false,
+    });
     const nickname: string = await this.userService.encodeNick(
       user.userNickname,
     ) 
@@ -214,8 +226,9 @@ export class UserController {
       if (nickCheck) {
         throw new Error('다른 닉네임을 지정해주세요');
       }
+      let SignupDto: SocialSignupDto; 
 
-      let SignupDto : SocialSignupDto= {
+      SignupDto = {
         userName: req.cookies.userName,
         userNickname: body.userNickname,
         userLoginType: 'kakao',
@@ -257,8 +270,8 @@ export class UserController {
     console.log(user)
     const refreshToken = await this.authService.setRefreshToken(user);
     const accessToken = await this.authService.setAccessToken(user);
-
-    let socialInfoDto : SocialInfoDto= {
+    let socialInfoDto = new SocialInfoDto()
+    socialInfoDto = {
       userId : user.userId,
       userNickname : user.userNickname
     }
@@ -276,8 +289,8 @@ export class UserController {
   }) 
   async refresh(@Req() req : any, @Res() res:Response) {
     const { user } = req 
-    
-    let tokenDto : TokenDto= {
+    let tokenDto = new TokenDto();
+    tokenDto = {
       userId : user.userId,
       userName : user.userName,
       userNickname : user.userNickname

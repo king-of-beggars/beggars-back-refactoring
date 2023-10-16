@@ -11,7 +11,6 @@ import { HotdealRepository } from './hotdeal.repository';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {Inject} from '@nestjs/common';
 import { LockService } from 'src/Utils/lock.service';
-import { HotdealListDto } from './dto/hotdealList.dto';
 
 @Injectable()
 export class HotdealService {
@@ -30,7 +29,19 @@ export class HotdealService {
     async registWinner (
         hotdealApplyDto : HotdealApplyDto
     ) {
-        this.hotdealRepository.postHotdeal(hotdealApplyDto)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
+        try {
+            await this.hotdealRepository.readByHotdealId(hotdealApplyDto.hotdealId, queryRunner)
+            await this.hotdealService.minusInventory(hotdealByIdDto,queryRunner)
+            await this.hotdealService.registWinner(hotdealApplyDto,queryRunner)
+        } catch(e) {
+            await queryRunner.rollbackTransaction()
+            throw new CreateFail(e.stack)
+        } finally {
+            await queryRunner.commitTransaction()
+        }
     }   
 
     //핫딜 재고 minus
@@ -39,7 +50,8 @@ export class HotdealService {
         updateNumber : number
     ) {
         try {
-            await this.hotdealRepository.updateInventory(hotdealId,updateNumber)
+            return this.hotdealRepository.updateInventory(hotdealId,updateNumber)
+
         } catch(e) {
             throw new UpdateFail(e.stack)
         }
@@ -50,14 +62,30 @@ export class HotdealService {
         return await this.hotdealRepository.deleteHotdeal(hotdealId)
     }
 
+    //핫딜 등록
     async addHotdeal (hotdealAdd : HotdealAddDto) {
-        return await this.hotdealRepository.postByAdmin(hotdealAdd)
+        try {
+            console.log(hotdealAdd)
+            const query = this.hotdeal.create(
+                hotdealAdd 
+            )
+            await this.hotdeal.save(query)
+        } catch(e) {
+            console.log(e)
+            throw new CreateFail(e.stack)
+        }
     }
 
     async readInventory (
-        hotdealId : number
+        hotdealByIdDto : HotdealByIdDto, 
+        queryRunner : QueryRunner
     ) {
-        return this.hotdealRepository.readCheckInventory(hotdealId)
+        return await queryRunner.manager
+        .createQueryBuilder()
+        .select('Hotdeal')
+        .where('hotdealId=:hotdealId',{hotdealId : hotdealByIdDto.hotdealId})
+        .andWhere('hotdealLimit>0')
+        .getOne()
     }
 
 }

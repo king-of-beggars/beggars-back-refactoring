@@ -1,25 +1,13 @@
-import { HotdealAddDto } from "./dto/hotdealAdd.dto";
-import { HotdealApplyDto } from "./dto/hotdealApply.dto";
 import { Hotdeal } from "./hotdeal.entity";
 import { QueryRunner, Repository } from "typeorm";
 export class HotdealRepository extends Repository<Hotdeal> {
 
-    async postHotdeal(hotdealApplyDto : HotdealApplyDto) : Promise<Hotdeal> {
-        const result = await this.createQueryBuilder('hotdeal')
-        .insert()
-        .into(Hotdeal)
-        .values(hotdealApplyDto)
-        .execute()
-        return result.raw
+    async postHotdeal() {
+        await this.createQueryBuilder('hotdeal')
     }
 
-    async postByAdmin(hotdealAddDto : HotdealAddDto) {
-        const result = await this.createQueryBuilder('hotdeal')
-        .insert()
-        .into(Hotdeal)
-        .values(hotdealAddDto)
-        .execute()
-        return result.raw
+    async postByAdmin() {
+
     }
 
     async readByHotdealId(hotdealId : number) {
@@ -53,12 +41,4 @@ export class HotdealRepository extends Repository<Hotdeal> {
         return result.raw
     }
     
-    async readCheckInventory(hotdealId : number) : Promise<Hotdeal> {
-        return await this
-        .createQueryBuilder('hotdeal')
-        .select('Hotdeal')
-        .where('hotdealId=:hotdealId',{hotdealId})
-        .andWhere('hotdealLimit>0')
-        .getOne()
-    }
 }
