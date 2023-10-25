@@ -26,7 +26,6 @@ export class BoardService {
         private userRepository : UserRepository,
         private userService : UserService,
         //pirvate cashlistRepository :Repository<CashlistEntity>
-        private readonly cashbookService : CashbookService,
         private readonly dataSource : DataSource,
         private readonly commentService : CommentService,
         private readonly likeRepository : LikeRepository

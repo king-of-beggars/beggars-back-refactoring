@@ -35,8 +35,7 @@ import { QueueService } from "src/Utils/queue.service";
 export class HotdealController {
     constructor(
         private hotdealService : HotdealService,
-        private readonly lockService : LockService,
-        private readonly queService : QueueService
+        private readonly lockService : LockService
     ){} 
 
     @Post(':hotDealId')

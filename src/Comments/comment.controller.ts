@@ -29,9 +29,7 @@ import { PointValue } from 'src/Utils/pointValue.enum';
 @Controller('api/board/:boardId/comment')
 export class CommentController {
   constructor(
-    private readonly commentService: CommentService,
-    private readonly userService: UserService,
-    private dataSource: DataSource
+    private readonly commentService: CommentService
     ) {}
 
   @Post('')

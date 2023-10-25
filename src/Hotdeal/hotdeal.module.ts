@@ -8,6 +8,8 @@ import { MulterModule } from "@nestjs/platform-express";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MulterConfigService } from "src/Utils/multer.config";
 import { HotdealWiner } from "./hotdealWinner.entity";
+import { HotdealRepository } from "./hotdeal.repository";
+import { LockService } from "src/Utils/lock.service";
 
 @Module({
     imports: [
@@ -24,7 +26,7 @@ import { HotdealWiner } from "./hotdealWinner.entity";
       
     ],
     controllers: [HotdealController],
-    providers: [HotdealService],
-    exports: [HotdealService],
+    providers: [HotdealService, HotdealRepository, LockService],
+    exports: [HotdealService, HotdealRepository],
   })
   export class HotdealModule {}

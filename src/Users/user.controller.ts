@@ -134,7 +134,6 @@ export class UserController {
     const refreshToken = await this.authService.setRefreshToken(tokenDto);
     const accessToken = await this.authService.setAccessToken(tokenDto);
 
-    await this.authService.setCookie(res, accessToken, refreshToken);
     res.setHeader('userId', user.userId);
     const nickname: string = await this.userService.encodeNick(
       user.userNickname,

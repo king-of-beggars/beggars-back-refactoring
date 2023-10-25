@@ -16,8 +16,6 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private readonly userService: UserService,
     private readonly redisService: RedisService
   ) {}
 

@@ -14,13 +14,16 @@ import { LikeController } from './like.controller';
 import { CommentController } from './comment.controller';
 import { UserService } from 'src/Users/service/user.service';
 import { AuthService } from 'src/Users/service/oauth2.service';
+import { CommentRepository } from './comment.respository';
+import { LikeRepository } from './like.repository';
+import { UserRepository } from 'src/Users/user.repository';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Board, Comment, Like]),
     PassportModule,
   ],
   controllers: [CommentController, LikeController],
-  providers: [CommentService, UserService], 
-  exports: [CommentService],
+  providers: [CommentService, LikeRepository, CommentRepository, UserRepository], 
+  exports: [CommentRepository, LikeRepository],
 })
 export class CommentModule {}

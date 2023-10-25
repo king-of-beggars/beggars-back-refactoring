@@ -13,15 +13,8 @@ import {
 } from '@nestjs/common';
 import { AccessAuthenticationGuard } from 'src/Users/passport/jwt/access.guard';
 import { BoardService } from './board.service';
-import { CashbookService } from 'src/Cashlists/cashbook.service';
-import { CashDetail } from 'src/Cashlists/entity/cashDetail.entity';
 import { PostBoardDto } from './dto/postBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
-import { Response, Request } from 'express';
-import { UserService } from 'src/Users/service/user.service';
-import { CommentService } from 'src/Comments/comment.service';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import {
   ApiQuery,
   ApiResponse,
@@ -30,26 +23,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { BoardResDto } from './dto/boardRes.dto';
-import { BoardDetailResDto } from './dto/boarDetailRes.dto';
-import { GetByCashbookIdDto } from 'src/Cashlists/dto/getByCashbookId.dto';
-import { GetByBoardIdDto } from './dto/getByBoardId.dto';
-import { DataSource, QueryRunner } from 'typeorm';
-import { PointValue } from 'src/Utils/pointValue.enum';
-import { HttpException } from '@nestjs/common/exceptions';
-import { HttpStatus } from '@nestjs/common/enums';
-import { GetByUserIdDto } from 'src/Users/dto/getByUserId.dto';
+import { BoardDetailResDto } from './dto/boarDetailRes.dto'
 
 @Controller('api/board')
 @ApiTags('게시물 API')
 export class BoardController {
   constructor(
-    private readonly boardService: BoardService,
-    private readonly cashbookService: CashbookService,
-    private readonly userService: UserService,
-    private readonly commentService: CommentService,
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-    private dataSource: DataSource,
+    private readonly boardService: BoardService
   ) {}
 
   @Get('noway')

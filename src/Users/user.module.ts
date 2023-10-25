@@ -17,6 +17,7 @@ import { MypageService } from './service/mypage.service';
 import { MypageController } from './mypage.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigService } from 'src/Utils/multer.config';
+import { UserRepository } from './user.repository';
 
 @Module({
   imports: [
@@ -36,14 +37,14 @@ import { MulterConfigService } from 'src/Utils/multer.config';
     UserService,
     AuthService,
     JwtService,
-    ConfigService, 
     LocalStrategy,
     KakaoStrategy,
     AccessStrategy,
     RefreshStrategy,
     RedisService,
-    MypageService
+    MypageService,
+    UserRepository
   ],
-  exports: [UserService, AuthService, JwtService, RedisService, MypageService],
+  exports: [UserService, UserRepository, RedisService, MypageService, UserRepository, JwtService],
 })
 export class UserModule {}

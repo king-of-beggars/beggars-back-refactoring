@@ -14,6 +14,11 @@ import { CashDetail } from 'src/Cashlists/entity/cashDetail.entity';
 import { CommentService } from 'src/Comments/comment.service';
 import { Like } from 'src/Comments/entity/like.entity';
 import { AuthService } from 'src/Users/service/oauth2.service';
+import { BoardRepository } from './board.repository';
+import { UserRepository } from 'src/Users/user.repository';
+import { CashbookRepository } from 'src/Cashlists/repository/cashbook.repsitory';
+import { UserService } from 'src/Users/service/user.service';
+import { LikeRepository } from 'src/Comments/like.repository';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -24,12 +29,9 @@ import { AuthService } from 'src/Users/service/oauth2.service';
       CashDetail,
       Like,
     ]),
-    PassportModule,
-    UserModule,
-    CashbookModule,
   ],
   controllers: [BoardController],
-  providers: [BoardService, CommentService, AuthService, JwtService],
-  exports: [BoardService], 
+  providers: [BoardService, BoardRepository, UserRepository, CashbookRepository, UserService, CommentService, LikeRepository, JwtService],
+  exports: [BoardRepository], 
 }) 
 export class BoardModule {}

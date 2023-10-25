@@ -29,9 +29,7 @@ import { CashbookCreateDto } from './dto/cashbookCreate.dto';
 export class CashbookContoller {
     constructor(
         private readonly cashbookService : CashbookService,
-        private readonly userService : UserService,
-        private readonly boardService : BoardService,
-        private dataSource : DataSource
+        private readonly userService : UserService
     ){}
 
     @Get('/main')

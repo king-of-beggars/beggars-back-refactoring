@@ -16,9 +16,7 @@ import { HotdealListDto } from './dto/hotdealList.dto';
 @Injectable()
 export class HotdealService {
     constructor(  
-        private readonly hotdealRepository : HotdealRepository,
-        private readonly dataSource : DataSource,
-        private readonly lockService : LockService
+        private readonly hotdealRepository : HotdealRepository
     ){}
     
     //핫딜 리스트

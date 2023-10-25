@@ -14,7 +14,6 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    private dataSource: DataSource,
     private jwtService : JwtService,
     private configService : ConfigService
   ) {}

@@ -24,7 +24,6 @@ export class CommentService {
     private readonly commentRepository: CommentRepository,
     private readonly likeRepository : LikeRepository,
     private readonly userRepository : UserRepository,
-    private readonly userService: UserService,
     private readonly dataSource : DataSource
   ) {}
 
